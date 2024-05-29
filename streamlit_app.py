@@ -38,3 +38,35 @@ if search_query:
         st.plotly_chart(fig)
 else:
     st.write(data)
+
+ Cargar los datos
+@st.cache
+def load_data():
+    data = pd.read_csv('tu_archivo.csv')  # Asegúrate de poner el nombre correcto del archivo
+    return data
+
+data = load_data()
+
+# Título de la aplicación
+st.title('Buscador de Películas')
+
+# Caja de búsqueda
+search_query = st.text_input('Ingrese el nombre de la película a buscar:')
+
+# Filtrar datos
+if search_query:
+    filtered_data = data[data['titulo'].str.contains(search_query, case=False)]  # Asegúrate de que 'titulo' es el nombre de la columna correcta
+    st.write(filtered_data)
+
+    # Verificar si hay datos para mostrar
+    if not filtered_data.empty:
+        # Crear un gráfico de rating por año con Plotly
+        fig = px.bar(filtered_data.groupby('year')['rating'].mean().reset_index(), 
+                     x='year', 
+                     y='rating', 
+                     labels={'year': 'Año', 'rating': 'Rating Promedio'},
+                     title='Rating Promedio por Año')
+        st.plotly_chart(fig)
+else:
+    st.write(data)
+    
