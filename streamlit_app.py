@@ -39,8 +39,6 @@ if search_query:
 else:
     st.write(data)
 
- Cargar los datos
-@st.cache
 def load_data():
     data = pd.read_csv('PELICULAS_PREUBAS_CONCHI.csv')  # Asegúrate de poner el nombre correcto del archivo
     return data
