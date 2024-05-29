@@ -1,48 +1,34 @@
+from openai import OpenAI
 import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
-import plotly.express as px
 
-# Cargar los datos
-@st.cache
-def load_data():
-    data = pd.read_csv('PELICULAS_PREUBAS_CONCHI.csv')  # Asegúrate de poner el nombre correcto del archivo
-    return data
+st.title("ChatGPT-like clone")
 
-data = load_data()
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-# Título de la aplicación
-st.title('Buscador de Películas')
+if "openai_model" not in st.session_state:
+    st.session_state["openai_model"] = "gpt-3.5-turbo"
 
-# Caja de búsqueda
-search_query = st.text_input('Ingrese el nombre de la película a buscar:')
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# Filtrar datos
-if search_query:
-    filtered_data = data[data['titulo'].str.contains(search_query, case=False)]  # Asegúrate de que 'titulo' es el nombre de la columna correcta
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-    # Mostrar datos filtrados
-    st.write(filtered_data)
+if prompt := st.chat_input("What is up?"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
-    # Crear un gráfico con Matplotlib (ejemplo: histograma de calificaciones)
-    if not filtered_data.empty:
-        plt.figure(figsize=(10, 4))
-        plt.hist(filtered_data['calificacion'], bins=20, color='blue')  # Asegúrate de que 'calificacion' es la columna correcta
-        plt.title('Distribución de Calificaciones')
-        plt.xlabel('Calificación')
-        plt.ylabel('Frecuencia')
-        st.pyplot(plt)
-
-        # Crear un gráfico con Plotly (ejemplo: gráfico de dispersión de duración vs calificación)
-        fig = px.scatter(filtered_data, x='duracion', y='calificacion', color='genero')  # Asegúrate de que estas columnas existen
-        st.plotly_chart(fig)
-else:
-    st.write(data)
-
-def load_data():
-    data = pd.read_csv('PELICULAS_PREUBAS_CONCHI.csv')  # Asegúrate de poner el nombre correcto del archivo
-    return data
-
-data = load_data()
-
+    with st.chat_message("assistant"):
+        stream = client.chat.completions.create(
+            model=st.session_state["openai_model"],
+            messages=[
+                {"role": m["role"], "content": m["content"]}
+                for m in st.session_state.messages
+            ],
+            stream=True,
+        )
+        response = st.write_stream(stream)
+    st.session_state.messages.append({"role": "assistant", "content": response})
     
