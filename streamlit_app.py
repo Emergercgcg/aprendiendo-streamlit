@@ -45,13 +45,4 @@ def load_data():
 
 data = load_data()
 
-
-        # Crear un gráfico de rating por año con Plotly
-        fig = px.bar(filtered_data.groupby('year')['rating'].mean().reset_index(), 
-                     x='year', 
-                     y='rating', 
-                     labels={'year': 'Año', 'rating': 'Rating Promedio'},
-                     title='Rating Promedio por Año')
-        st.plotly_chart(fig)
-
     
